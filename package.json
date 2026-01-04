@@ -24,6 +24,7 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "next": "^14.2.35",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
     "@types/node": "^22.5.1",
