@@ -2,6 +2,7 @@
 
 import { CanvasPanel } from '../components/canvas/CanvasPanel';
 import { CommunityPanel } from '../components/community/CommunityPanel';
+import { MaintenanceBanner } from '../components/MaintenanceBanner';
 import { Toolbar } from '../components/toolbar/Toolbar';
 
 import styles from './page.module.css';
@@ -9,6 +10,7 @@ import styles from './page.module.css';
 export default function Home() {
   return (
     <div className={styles.pageWrapper}>
+      <MaintenanceBanner />
       <header className={styles.appHeader}>
         <h1 className={styles.logo}>
           <span className={styles.logoPump}>Pump</span>
