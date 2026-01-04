@@ -2,11 +2,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-redundant-type-constituents, @typescript-eslint/no-misused-promises */
 
 import { useCallback, useEffect, useState } from 'react';
+
 import styles from '../../app/page.module.css';
 import { usePaintConfig } from '../../hooks/usePaintConfig';
-import { isPixel, useTileState } from '../../hooks/useTileState';
-import { colorToHex } from '../../lib/colors';
+import { useTileState, isPixel } from '../../hooks/useTileState';
 import { useWallet } from '../../hooks/useWallet';
+import { colorToHex } from '../../lib/colors';
 
 // Color palette inspired by r/place - 32 colors
 const COLOR_PALETTE = [
@@ -50,7 +51,6 @@ export function ToolPanel() {
     toolMode, 
     toggleToolMode,
     showGrid,
-    toggleGrid,
   } = usePaintConfig();
 
   const { wallet } = useWallet();

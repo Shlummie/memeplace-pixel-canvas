@@ -2,11 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 
-import { CANVAS_DIMENSION } from '../../hooks/useBoard';
-import { colorToRgb } from '../../lib/colors';
-import type { ToolMode } from '../../hooks/usePaintConfig';
-
 import type { Pixel } from '@memeplace/shared';
+
+import { CANVAS_DIMENSION } from '../../hooks/useBoard';
+import type { ToolMode } from '../../hooks/usePaintConfig';
+import { colorToRgb } from '../../lib/colors';
 
 interface CanvasViewerProps {
   boardBytes: Uint8Array;
