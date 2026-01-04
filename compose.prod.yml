@@ -1,0 +1,121 @@
+version: "3.9"
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    env_file:
+      - apps/server/.env
+    environment:
+      - NODE_ENV=production
+      - HEALTHCHECK_URL=http://localhost:3001/v1/config
+      - HEALTHCHECK_TIMEOUT=5000
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "node", "apps/server/scripts/healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - redis
+      - postgres
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    env_file:
+      - apps/web/.env.production
+    environment:
+      - NODE_ENV=production
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000',res=>{if(res.statusCode>=200&&res.statusCode<400){res.resume();process.exit(0);}else{process.exit(1);}}).on('error',()=>process.exit(1));"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      server:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      web:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: memeplace
+      POSTGRES_USER: memeplace
+      POSTGRES_PASSWORD: memeplace
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backups:
+    image: amazon/aws-cli:2.17.7
+    entrypoint: ["/bin/sh", "-c"]
+    command: "echo '0 * * * * /backup/postgres-backup.sh\n5 * * * * /backup/redis-backup.sh' > /etc/crontabs/root && crond -f"
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION
+      - S3_BUCKET
+      - POSTGRES_DB=memeplace
+      - POSTGRES_USER=memeplace
+      - POSTGRES_PASSWORD=memeplace
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_SNAPSHOT_PATH=/data/dump.rdb
+    volumes:
+      - ./scripts/backup:/backup:ro
+      - postgres-data:/var/lib/postgresql/data:ro
+      - redis-data:/data:ro
+    depends_on:
+      - postgres
+      - redis
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    command: ["--config.file=/config/blackbox.yml"]
+    volumes:
+      - ./infra/prometheus/blackbox.yml:/config/blackbox.yml:ro
+
+  prometheus:
+    image: prom/prometheus:v2.53.1
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - blackbox
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:

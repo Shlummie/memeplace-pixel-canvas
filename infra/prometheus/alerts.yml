@@ -1,0 +1,11 @@
+groups:
+  - name: uptime
+    rules:
+      - alert: ServiceDown
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.instance }} is not reachable"
+          description: "The blackbox probe failed for {{ $labels.instance }}"

@@ -1,0 +1,6 @@
+{
+  "pixelCost": 50000000,
+  "walletCooldownSeconds": 30,
+  "maxPixelsPerBatch": 64
+}
+

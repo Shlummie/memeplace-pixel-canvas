@@ -1,0 +1,3 @@
+ALTER TABLE placements
+  ALTER COLUMN color TYPE INTEGER;
+
