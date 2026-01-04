@@ -8,8 +8,8 @@ import { WalletProvider } from '../components/providers/WalletProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Memeplace',
-  description: 'Burn to paint on the Memeplace canvas.',
+  title: 'Pump Place',
+  description: 'Burn tokens to paint on the Pump Place canvas.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
