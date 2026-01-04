@@ -1,12 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import type { AppConfig } from '../lib/context';
 
 // Resolve config path relative to this file's location, not cwd
-// From src/config/ -> ../../config/appConfig.json (apps/server/config/)
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// From dist/config/ -> ../../config/appConfig.json (apps/server/config/)
 const CONFIG_PATH = path.resolve(__dirname, '..', '..', 'config', 'appConfig.json');
 
 const DEFAULT_CONFIG: AppConfig = {
