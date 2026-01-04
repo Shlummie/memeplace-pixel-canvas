@@ -1,9 +1,8 @@
 "use client";
+/* eslint-disable import/order */
 
 import { useEffect, useRef } from 'react';
-
 import type { Pixel } from '@memeplace/shared';
-
 import { CANVAS_DIMENSION } from '../../hooks/useBoard';
 import type { ToolMode } from '../../hooks/usePaintConfig';
 import { colorToRgb } from '../../lib/colors';
