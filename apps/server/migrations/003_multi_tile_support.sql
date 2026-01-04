@@ -19,20 +19,39 @@ CREATE TABLE IF NOT EXISTS batch_tile_bytes (
   FOREIGN KEY (signature, tile) REFERENCES batch_tiles(signature, tile) ON DELETE CASCADE
 );
 
-INSERT INTO batch_tiles (signature, tile, commit, pixel_count)
-SELECT signature, tile, commit, 0
-FROM batches
-ON CONFLICT (signature, tile) DO NOTHING;
+-- Only migrate data if the old columns still exist
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'batches' AND column_name = 'tile'
+  ) THEN
+    INSERT INTO batch_tiles (signature, tile, commit, pixel_count)
+    SELECT signature, tile, commit, 0
+    FROM batches
+    ON CONFLICT (signature, tile) DO NOTHING;
+  END IF;
+END $$;
 
-INSERT INTO batch_tile_bytes (signature, tile, batch_bytes)
-SELECT b.signature, b.tile, bb.batch_bytes
-FROM batches b
-JOIN batch_bytes bb ON bb.signature = b.signature
-ON CONFLICT (signature, tile) DO NOTHING;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_name = 'batch_bytes'
+  ) AND EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'batches' AND column_name = 'tile'
+  ) THEN
+    INSERT INTO batch_tile_bytes (signature, tile, batch_bytes)
+    SELECT b.signature, b.tile, bb.batch_bytes
+    FROM batches b
+    JOIN batch_bytes bb ON bb.signature = b.signature
+    ON CONFLICT (signature, tile) DO NOTHING;
+  END IF;
+END $$;
 
 DROP TABLE IF EXISTS batch_bytes;
 
 ALTER TABLE batches
   DROP COLUMN IF EXISTS tile,
   DROP COLUMN IF EXISTS commit;
-

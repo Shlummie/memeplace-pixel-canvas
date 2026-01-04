@@ -1,8 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo build --filter=@memeplace/shared && pnpm turbo build --filter=web",
+  "buildCommand": "cd apps/web && pnpm run build",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "pnpm install",
+  "installCommand": "pnpm install && pnpm turbo build --filter=@memeplace/shared",
   "framework": "nextjs"
 }
-
