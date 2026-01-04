@@ -39,7 +39,6 @@ export function CanvasPanel() {
     showGrid, 
     toggleGrid,
     setActiveColor,
-    activeColor,
   } = usePaintConfig();
 
   const boardBytes = useBoardStore((state) => state.board);
@@ -138,7 +137,7 @@ export function CanvasPanel() {
       await Promise.all(promises);
     };
 
-    loadAllTiles().finally(() => {
+    void loadAllTiles().finally(() => {
       if (active) {
         setLoadingTiles(false);
       }
