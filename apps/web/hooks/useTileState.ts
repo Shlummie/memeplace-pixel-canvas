@@ -152,6 +152,10 @@ export function useTileState(): UseTileStateValue {
   const burnAndSubmit = async () => {
     console.log('[burnAndSubmit] Starting...', { stagedPixels: stagedPixels.length, wallet: wallet.publicKey?.toBase58(), memeMint: settings.memeMint });
     if (stagedPixels.length === 0) return;
+    if (stagedPixels.length > settings.maxPixelsPerBatch) {
+      setError(`Max ${settings.maxPixelsPerBatch} pixels per burn. You have ${stagedPixels.length} staged.`);
+      return;
+    }
     if (!wallet.publicKey) {
       setError('Connect your wallet before burning');
       return;
