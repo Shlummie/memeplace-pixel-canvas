@@ -16,10 +16,10 @@
         "./*"
       ],
       "@memeplace/shared": [
-        "../../packages/shared/dist/index"
+        "../../packages/shared/src/index"
       ],
       "@memeplace/shared/*": [
-        "../../packages/shared/dist/*"
+        "../../packages/shared/src/*"
       ]
     },
     "plugins": [

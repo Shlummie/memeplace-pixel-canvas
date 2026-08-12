@@ -1,5 +1,6 @@
-import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+
+import type { FastifyInstance } from 'fastify';
 
 const KEY_PREFIX = 'cooldown:wallet';
 

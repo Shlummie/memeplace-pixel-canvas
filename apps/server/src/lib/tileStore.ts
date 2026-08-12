@@ -10,7 +10,6 @@ const TILE_COUNT = 100;
 const TILE_DIMENSION = 100;
 const BYTES_PER_PIXEL = 3;
 const TILE_BYTES = TILE_DIMENSION * TILE_DIMENSION * BYTES_PER_PIXEL;
-const DEFAULT_FILL = 0xffffff;
 
 function createTileBuffer(): Buffer {
   const buffer = Buffer.alloc(TILE_BYTES);
@@ -80,7 +79,7 @@ export async function createTileStore(redis: RedisClient): Promise<TileStore> {
       validateTileId(tile);
       const key = getTileKey(tile);
       // Use getBuffer to ensure we get raw bytes, not string
-      const reply = await redis.get(redis.commandOptions({ returnBuffers: true }), key) as Buffer | null;
+      const reply = await redis.get(redis.commandOptions({ returnBuffers: true }), key);
       if (!reply) {
         const fresh = createTileBuffer();
         await redis.set(key, fresh);
@@ -92,7 +91,7 @@ export async function createTileStore(redis: RedisClient): Promise<TileStore> {
       validateTileId(tile);
       const key = getTileKey(tile);
       // Use returnBuffers to get raw bytes
-      const existing = await redis.get(redis.commandOptions({ returnBuffers: true }), key) as Buffer | null;
+      const existing = await redis.get(redis.commandOptions({ returnBuffers: true }), key);
       const tileBuffer = new Uint8Array(existing ?? createTileBuffer());
 
       diff.forEach(({ x, y, color }) => {

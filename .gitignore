@@ -31,6 +31,10 @@ Thumbs.db
 # Turbo
 .turbo
 
+# Runtime canvas tiles and local backups
+tile*.bin
+backups/
+
 # Package lock duplicates
 package-lock.json
 yarn.lock

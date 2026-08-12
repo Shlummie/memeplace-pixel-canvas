@@ -1,7 +1,8 @@
-import type { FastifyInstance } from 'fastify';
 
 import { enforceTileRateLimit, RateLimitError } from '../lib/rateLimit';
 import { parseTileId } from '../services/parseTileId';
+
+import type { FastifyInstance } from 'fastify';
 
 export function registerTileRoute(app: FastifyInstance) {
   app.get('/v1/tile/:id', async (request, reply) => {
@@ -22,8 +23,7 @@ export function registerTileRoute(app: FastifyInstance) {
     }
 
     const buffer = await app.tileStore.getTile(tile.value);
-    reply.header('content-type', 'application/octet-stream');
-    return reply.send(Buffer.from(buffer));
+    return reply.header('content-type', 'application/octet-stream').send(Buffer.from(buffer));
   });
 }
 

@@ -1,17 +1,18 @@
-import type { ParsedInstruction, ParsedTransactionMeta, TokenBalance } from '@solana/web3.js';
-import type { PoolClient } from 'pg';
 import { Connection, PublicKey } from '@solana/web3.js';
 
 import type { AppContext } from '../lib/context';
+import type { ParsedInstruction, ParsedTransactionMeta, TokenBalance } from '@solana/web3.js';
+import type { PoolClient } from 'pg';
+
 
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 
-type BatchInfo = {
+interface BatchInfo {
   tile: number;
   commit: string;
   pixelCount: number;
   bytes?: Buffer;
-};
+}
 
 export async function creditFromTx(
   ctx: AppContext,
@@ -44,7 +45,7 @@ export async function creditFromTx(
   const parsedMemo = JSON.parse(memoData) as {
     v: number;
     canvas: string;
-    commits: Array<{ tile: number; commit: string }>;
+    commits: { tile: number; commit: string }[];
   };
 
   if (parsedMemo.v !== 1 || parsedMemo.canvas !== 'main') {
@@ -98,12 +99,14 @@ export async function creditFromTx(
 }
 
 function extractMemoData(instruction: ParsedInstruction): string | undefined {
-  if (typeof instruction.parsed === 'string') {
-    return instruction.parsed;
+  const parsed: unknown = instruction.parsed;
+  if (typeof parsed === 'string') {
+    return parsed;
   }
 
-  if (instruction.parsed?.info?.memo) {
-    return instruction.parsed.info.memo as string;
+  const info = extractParsedInfo(parsed);
+  if (typeof info?.memo === 'string') {
+    return info.memo;
   }
 
   if ('data' in instruction && typeof instruction.data === 'string') {
@@ -172,8 +175,8 @@ function calculateBurnFromInstructions(meta: ParsedTransactionMeta, mintKey: str
   for (const inner of meta.innerInstructions ?? []) {
     for (const instruction of inner.instructions) {
       if ('parsed' in instruction) {
-        const info = instruction.parsed?.info as { mint?: string; amount?: string } | undefined;
-        if (info?.mint === mintKey && info.amount) {
+        const info = extractParsedInfo(instruction.parsed as unknown);
+        if (info?.mint === mintKey && typeof info.amount === 'string') {
           total += BigInt(info.amount);
         }
       }
@@ -181,5 +184,13 @@ function calculateBurnFromInstructions(meta: ParsedTransactionMeta, mintKey: str
   }
 
   return total;
+}
+
+function extractParsedInfo(value: unknown): Record<string, unknown> | undefined {
+  if (typeof value !== 'object' || value === null || !('info' in value)) {
+    return undefined;
+  }
+  const info = value.info;
+  return typeof info === 'object' && info !== null ? (info as Record<string, unknown>) : undefined;
 }
 

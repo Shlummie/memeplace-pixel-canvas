@@ -1,9 +1,10 @@
 import { RateLimitError } from '../lib/rateLimit';
+
 import type { RedisClient } from '../lib/context';
 
 const KEY_PREFIX = 'cooldown:wallet';
 
-export async function enforceWalletCooldown(redis: RedisClient, wallet: string, cooldownSeconds: number) {
+export async function enforceWalletCooldown(redis: RedisClient, wallet: string) {
   const key = `${KEY_PREFIX}:${wallet}`;
   const ttl = await redis.ttl(key);
 

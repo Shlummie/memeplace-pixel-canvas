@@ -1,7 +1,7 @@
-import type { Pixel } from '@memeplace/shared';
 
 import type { AppContext } from '../lib/context';
 import type { PixelDiff, TileStore } from '../lib/tileStore';
+import type { Pixel } from '@memeplace/shared';
 
 export async function applyPixels(
   ctx: AppContext,

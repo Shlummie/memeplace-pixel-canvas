@@ -1,6 +1,6 @@
+import type { DecodedBatch } from './decodeBatch';
 import type { Pool } from 'pg';
 
-import type { DecodedBatch } from './decodeBatch';
 
 interface ExistingBatchMatch {
   signature: string;

@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers';
 import Fastify, { type FastifyInstance } from 'fastify';
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { createContext } from '../../src/lib/context';
 import { createTileStore } from '../../src/lib/tileStore';
 import { registerRoutes } from '../../src/routes';
@@ -70,7 +69,7 @@ async function runMigrations(databaseUrl: string) {
 }
 
 async function createTestApp(): Promise<TestSetup> {
-  const app = Fastify({ logger: false }).withTypeProvider<ZodTypeProvider>();
+  const app = Fastify({ logger: false });
   const ctx = await createContext(testEnv);
   const tileStore = await createTileStore(ctx.redis);
 
@@ -94,29 +93,44 @@ async function createTestApp(): Promise<TestSetup> {
 
 describe('submit integration', () => {
   beforeAll(async () => {
-    pgContainer = await new GenericContainer('postgres:16-alpine')
-      .withEnvironment({
-        POSTGRES_DB: 'testdb',
-        POSTGRES_USER: 'testuser',
-        POSTGRES_PASSWORD: 'testpass',
-      })
-      .withExposedPorts(5432)
-      .withWaitStrategy(Wait.forLogMessage('database system is ready to accept connections'))
-      .start();
+    try {
+      pgContainer = await new GenericContainer('postgres:16-alpine')
+        .withEnvironment({
+          POSTGRES_DB: 'testdb',
+          POSTGRES_USER: 'testuser',
+          POSTGRES_PASSWORD: 'testpass',
+        })
+        .withExposedPorts(5432)
+        // The official image reports readiness once for its temporary init
+        // server, shuts that server down, then reports readiness again for the
+        // long-running server. Connecting after the first message is racy.
+        .withWaitStrategy(Wait.forLogMessage('database system is ready to accept connections', 2))
+        .start();
 
-    redisContainer = await new GenericContainer('redis:7-alpine')
-      .withExposedPorts(6379)
-      .start();
+      redisContainer = await new GenericContainer('redis:7-alpine')
+        .withExposedPorts(6379)
+        .start();
 
-    const pgPort = pgContainer.getMappedPort(5432);
-    const pgHost = pgContainer.getHost();
-    const redisPort = redisContainer.getMappedPort(6379);
-    const redisHost = redisContainer.getHost();
+      const pgPort = pgContainer.getMappedPort(5432);
+      const pgHost = pgContainer.getHost();
+      const redisPort = redisContainer.getMappedPort(6379);
+      const redisHost = redisContainer.getHost();
 
-    testEnv.DATABASE_URL = `postgresql://testuser:testpass@${pgHost}:${pgPort}/testdb`;
-    testEnv.REDIS_URL = `redis://${redisHost}:${redisPort}`;
+      testEnv.DATABASE_URL = `postgresql://testuser:testpass@${pgHost}:${pgPort}/testdb`;
+      testEnv.REDIS_URL = `redis://${redisHost}:${redisPort}`;
 
-    await runMigrations(testEnv.DATABASE_URL);
+      await runMigrations(testEnv.DATABASE_URL);
+    } catch (error) {
+      if (redisContainer) {
+        await redisContainer.stop().catch(() => undefined);
+        redisContainer = undefined;
+      }
+      if (pgContainer) {
+        await pgContainer.stop().catch(() => undefined);
+        pgContainer = undefined;
+      }
+      throw error;
+    }
   }, 120000);
 
   afterAll(async () => {

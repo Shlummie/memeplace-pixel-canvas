@@ -64,7 +64,7 @@ services:
     environment:
       POSTGRES_DB: memeplace
       POSTGRES_USER: memeplace
-      POSTGRES_PASSWORD: memeplace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting production services}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -80,7 +80,7 @@ services:
       - S3_BUCKET
       - POSTGRES_DB=memeplace
       - POSTGRES_USER=memeplace
-      - POSTGRES_PASSWORD=memeplace
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting production services}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - REDIS_HOST=redis

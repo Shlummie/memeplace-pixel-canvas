@@ -2,8 +2,7 @@
 
 /**
  * MaintenanceBanner - Shows when NEXT_PUBLIC_MAINTENANCE_MODE=true
- * Used during token launches to prevent users from attempting burns
- * with stale configuration.
+ * Blocks write attempts while operators verify configuration.
  */
 export function MaintenanceBanner() {
   const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
@@ -15,10 +14,10 @@ export function MaintenanceBanner() {
   return (
     <div className="maintenanceBanner">
       <div className="maintenanceContent">
-        <div className="maintenanceIcon">🚀</div>
+        <div className="maintenanceIcon">🛠️</div>
         <div className="maintenanceText">
-          <strong>Launching New Token</strong>
-          <span>We&apos;re switching to the mainnet token. Back in a few minutes!</span>
+          <strong>Maintenance mode</strong>
+          <span>Pixel submissions are temporarily disabled while configuration is verified.</span>
         </div>
       </div>
       <style jsx>{`

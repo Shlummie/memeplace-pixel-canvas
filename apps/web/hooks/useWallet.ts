@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from 'react';
 import { useWallet as useWalletAdapter } from '@solana/wallet-adapter-react';
+import { useMemo } from 'react';
 
 export function useWallet() {
   const wallet = useWalletAdapter();

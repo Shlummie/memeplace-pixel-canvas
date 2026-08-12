@@ -5,6 +5,13 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
     "build": "tsup src/index.ts --dts",
     "dev": "tsup src/index.ts --dts --watch",
@@ -12,7 +19,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@noble/hashes": "1.8.0"
+  },
   "devDependencies": {
     "@types/node": "^22.5.1",
     "eslint": "^8.57.0",

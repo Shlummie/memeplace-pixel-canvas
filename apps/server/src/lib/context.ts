@@ -6,12 +6,15 @@ import {
   type RedisScripts,
 } from 'redis';
 
-import { env as envSchema } from '../env';
-import type { Env } from '../env';
-import { createEventManager, type EventManager } from './events';
-import type { PgPool } from './db';
-import { createPool } from './db';
 import { loadConfig } from '../config/loadConfig';
+import { env as envSchema } from '../env';
+
+import { createPool } from './db';
+import { createEventManager, type EventManager } from './events';
+
+import type { Env } from '../env';
+import type { PgPool } from './db';
+
 
 export type RedisClient = RedisClientType<RedisDefaultModules, RedisFunctions, RedisScripts>;
 

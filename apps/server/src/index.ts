@@ -1,14 +1,13 @@
 import cors from '@fastify/cors';
 import websocketPlugin from '@fastify/websocket';
 import Fastify from 'fastify';
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
+import WebSocket from 'ws';
 
 import { env } from './env';
 import { createContext } from './lib/context';
 import { createTileStore } from './lib/tileStore';
 import { registerRoutes } from './routes';
 
-import WebSocket from 'ws';
 import type { AppContext } from './lib/context';
 import type { TileStore } from './lib/tileStore';
 
@@ -18,7 +17,7 @@ export async function buildServer() {
   const tileStore = await createTileStore(ctx.redis);
   console.info('[server] tile store ready');
 
-  const app = Fastify({ logger: true, pluginTimeout: 60000 }).withTypeProvider<ZodTypeProvider>();
+  const app = Fastify({ logger: true, pluginTimeout: 60000 });
 
   app.log.info('Bootstrapping server…');
   app.log.info({ env: env.SEASON_LABEL }, 'Environment parsed');

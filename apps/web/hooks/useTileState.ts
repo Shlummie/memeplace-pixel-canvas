@@ -1,10 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
-
-import { create } from 'zustand';
-
-import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js';
+import { sha256, type Pixel } from '@memeplace/shared';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
@@ -12,13 +8,17 @@ import {
   createBurnInstruction,
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
-import { sha256, type Pixel } from '@memeplace/shared';
+import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js';
+import { useMemo } from 'react';
+import { create } from 'zustand';
+
+
+import { hexToColor } from '../lib/colors';
 
 import { usePaintConfig } from './usePaintConfig';
 import { useSettings } from './useSettings';
 import { useWallet } from './useWallet';
 
-import { hexToColor } from '../lib/colors';
 
 const TILE_DIMENSION = 100;
 const TILES_PER_SIDE = 10;
@@ -145,7 +145,7 @@ export function useTileState(): UseTileStateValue {
     useTileStore.getState().stagePixel({ x, y, color });
   };
 
-  const applyDiff = (_tile: number, _diff: Pixel[]) => {
+  const applyDiff: UseTileStateValue['applyDiff'] = () => {
     // Board store already handles remote diffs; no staging mutation required.
   };
 
@@ -307,10 +307,10 @@ export function useTileState(): UseTileStateValue {
   };
 }
 
-type TokenProgramConfig = {
+interface TokenProgramConfig {
   tokenProgramId: PublicKey;
   associatedTokenProgramId: PublicKey;
-};
+}
 
 const TOKEN_PROGRAM_CACHE = new Map<string, TokenProgramConfig>();
 
@@ -376,15 +376,6 @@ export function isUseTileStateValue(value: unknown): value is UseTileStateValue 
     typeof candidate.burnAndSubmit === 'function' &&
     typeof candidate.isSubmitting === 'boolean'
   );
-}
-
-function hexToGray(hex: string) {
-  const normalized = hex.replace('#', '');
-  if (normalized.length !== 6) return 255;
-  const r = parseInt(normalized.slice(0, 2), 16);
-  const g = parseInt(normalized.slice(2, 4), 16);
-  const b = parseInt(normalized.slice(4, 6), 16);
-  return Math.max(0, Math.min(255, Math.round(0.299 * r + 0.587 * g + 0.114 * b)));
 }
 
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');

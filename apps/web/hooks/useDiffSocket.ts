@@ -4,13 +4,11 @@ import { useEffect, useRef } from 'react';
 
 import { useSettings } from './useSettings';
 
-type TileUpdateMessage = {
+interface TileUpdateMessage {
   type: 'tile_update';
   tile: number;
-  diff: Array<{ x: number; y: number; color: number }>;
-};
-
-type DiffMessage = TileUpdateMessage | { type: string };
+  diff: { x: number; y: number; color: number }[];
+}
 
 function isTileUpdateMessage(message: unknown): message is TileUpdateMessage {
   if (!message || typeof message !== 'object') {
@@ -33,7 +31,7 @@ function isTileUpdateMessage(message: unknown): message is TileUpdateMessage {
   return true;
 }
 
-export function useDiffSocket(onDiff: (tile: number, diff: Array<{ x: number; y: number; color: number }>) => void) {
+export function useDiffSocket(onDiff: (tile: number, diff: { x: number; y: number; color: number }[]) => void) {
   const handlerRef = useRef(onDiff);
   handlerRef.current = onDiff;
   const { settings } = useSettings();
@@ -43,7 +41,11 @@ export function useDiffSocket(onDiff: (tile: number, diff: Array<{ x: number; y:
 
     socket.addEventListener('message', (event) => {
       try {
-        const message = JSON.parse(event.data) as DiffMessage;
+        if (typeof event.data !== 'string') {
+          return;
+        }
+
+        const message: unknown = JSON.parse(event.data);
         if (isTileUpdateMessage(message)) {
           handlerRef.current(message.tile, message.diff);
         }

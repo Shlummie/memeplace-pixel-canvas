@@ -24,7 +24,7 @@ const DEFAULT_API_BASE = resolveDefaultApiBase();
 const DEFAULT_SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? deriveSocketUrl(DEFAULT_API_BASE);
 
 const DEFAULT_SETTINGS = {
-  rpcUrl: process.env.NEXT_PUBLIC_RPC_URL ?? 'https://api.mainnet-beta.solana.com',
+  rpcUrl: process.env.NEXT_PUBLIC_RPC_URL ?? 'https://api.devnet.solana.com',
   apiBase: DEFAULT_API_BASE,
   memeMint: process.env.NEXT_PUBLIC_MEME_MINT ?? '',
   pixelCost: sanitizePositiveNumber(process.env.NEXT_PUBLIC_PIXEL_COST, 1),
@@ -90,12 +90,8 @@ export const useSettings = create<SettingsState>((set, get) => ({
       if (!response.ok) {
         throw new Error(`Failed to load config (${response.status})`);
       }
-      const config: Partial<Settings> & {
-        pixelCost?: unknown;
-        maxPixelsPerBatch?: unknown;
-        walletCooldownSeconds?: unknown;
-        memeMint?: unknown;
-      } = await response.json();
+      const payload: unknown = await response.json();
+      const config = isRecord(payload) ? payload : {};
 
       set((state) => ({
         settings: {
@@ -148,5 +144,9 @@ function sanitizePositiveNumber(value: unknown, fallback: number): number {
     return fallback;
   }
   return numeric;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 

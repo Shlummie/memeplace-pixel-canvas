@@ -1,13 +1,15 @@
+import { z } from 'zod';
+
+import { enforceSubmitRateLimits, RateLimitError } from '../lib/rateLimit';
 import { applyPixels } from '../services/applyPixels';
 import { decodeBatch } from '../services/decodeBatch';
-import { ensureCredits } from '../services/ensureCredits';
+import { enforceWalletCooldown, setWalletCooldown } from '../services/enforceWalletCooldown';
+import { CreditError, ensureCredits } from '../services/ensureCredits';
 import { findExistingBatch } from '../services/findExistingBatch';
 import { verifyCommitSignature } from '../services/verifyCommitSignature';
-import { enforceSubmitRateLimits, RateLimitError } from '../lib/rateLimit';
-import { enforceWalletCooldown, setWalletCooldown } from '../services/enforceWalletCooldown';
 
 import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
+
 
 const submitSchema = z.object({
   sig: z.string(),
@@ -38,7 +40,7 @@ export function registerSubmitRoute(app: FastifyInstance) {
 
     try {
       await enforceSubmitRateLimits(ctx.redis, request.ip, payload.wallet);
-      await enforceWalletCooldown(ctx.redis, payload.wallet, ctx.config.walletCooldownSeconds);
+      await enforceWalletCooldown(ctx.redis, payload.wallet);
     } catch (error) {
       if (error instanceof RateLimitError) {
         return reply
@@ -53,7 +55,7 @@ export function registerSubmitRoute(app: FastifyInstance) {
     const memoPayload = JSON.parse(memoJson) as {
       v: number;
       canvas: string;
-      commits: Array<{ tile: number; commit: string }>;
+      commits: { tile: number; commit: string }[];
     };
 
     if (memoPayload.v !== 1 || memoPayload.canvas !== 'main') {
@@ -91,7 +93,14 @@ export function registerSubmitRoute(app: FastifyInstance) {
       return reply.status(202).send({ status: 'accepted', commits: batchInfo.map(({ tile, commit }) => ({ tile, commit })), idempotent: true });
     }
 
-    await ensureCredits(ctx, payload.sig, payload.wallet, batchInfo, payload.memoB64);
+    try {
+      await ensureCredits(ctx, payload.sig, payload.wallet, batchInfo, payload.memoB64);
+    } catch (error) {
+      if (error instanceof CreditError) {
+        return reply.status(400).send({ error: error.message });
+      }
+      throw error;
+    }
     verifyCommitSignature(payload.wallet, payload.signedMsgB64, payload.sig, payload.memoB64);
 
     await Promise.all(

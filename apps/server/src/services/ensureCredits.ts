@@ -1,18 +1,26 @@
-import type { PoolClient } from 'pg';
+import { creditFromTx } from './creditFromTx';
 
 import type { AppContext } from '../lib/context';
-import { creditFromTx } from './creditFromTx';
+import type { PoolClient } from 'pg';
+
 
 interface CreditRow {
   credits: number;
 }
 
-type BatchInfo = {
+interface BatchInfo {
   tile: number;
   commit: string;
   pixelCount: number;
   bytes?: Buffer;
-};
+}
+
+export class CreditError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CreditError';
+  }
+}
 
 export async function ensureCredits(
   ctx: AppContext,
@@ -35,12 +43,12 @@ export async function ensureCredits(
     if (rows.length === 0) {
       credits = await creditFromTx(ctx, sig, wallet, batches, memoB64, client);
       if (credits <= 0) {
-        throw new Error('No credits available for signature');
+        throw new CreditError('No credits available for signature');
       }
     }
 
     if (credits < totalPixels) {
-      throw new Error('Insufficient credits');
+      throw new CreditError('Insufficient credits');
     }
 
     await client.query('UPDATE batches SET credits = credits - $2 WHERE signature = $1', [sig, totalPixels]);

@@ -5,7 +5,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@memeplace/shared": ["../../packages/shared/dist/index"],
+      "@memeplace/shared": ["../../packages/shared/dist/index.d.ts"],
       "@memeplace/shared/*": ["../../packages/shared/dist/*"]
     }
   },

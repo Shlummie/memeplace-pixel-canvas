@@ -9,6 +9,14 @@ function randomBytes(length: number): Uint8Array {
 }
 
 describe('sha256', () => {
+  it('matches the standard SHA-256 vector for abc', () => {
+    const data = new TextEncoder().encode('abc');
+
+    expect(sha256(data)).toBe(
+      'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+    );
+  });
+
   it('hashes consistent for same data', () => {
     const data = randomBytes(32);
     const first = sha256(data);

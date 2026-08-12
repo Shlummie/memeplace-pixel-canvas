@@ -1,5 +1,5 @@
-export type ParseSuccess = { kind: 'success'; value: number };
-export type ParseError = { kind: 'error'; message: string };
+export interface ParseSuccess { kind: 'success'; value: number }
+export interface ParseError { kind: 'error'; message: string }
 export type ParseResult = ParseSuccess | ParseError;
 
 const TILE_MIN = 0;
